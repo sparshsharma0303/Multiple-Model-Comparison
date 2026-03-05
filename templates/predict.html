@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Predict — Model Arena</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #0a0a0f;
+      --surface: #111118;
+      --border:  #1e1e2e;
+      --accent:  #c8f04a;
+      --accent2: #4af0c8;
+      --danger:  #f04a6a;
+      --text:    #e8e8f0;
+      --muted:   #5a5a7a;
+      --card-bg: #13131c;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .logo-block h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .logo-block h1 span { color: var(--accent); }
+    .logo-block p { color: var(--muted); font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; }
+
+    .btn {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-outline { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-outline:hover { color: var(--text); border-color: var(--muted); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0a0f;
+      width: 100%;
+      justify-content: center;
+      padding: 16px;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover {
+      background: #d8ff5a;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(200,240,74,0.25);
+    }
+
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .model-selector {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    select, input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    select:focus, input:focus { border-color: var(--accent2); }
+
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.4s ease 0.1s both;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+
+    .form-group label {
+      font-size: 0.68rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    #result-box {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .result-label { font-size: 0.68rem; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .result-value { font-family: 'Syne', sans-serif; font-size: 3rem; font-weight: 800; letter-spacing: -1px; }
+    .result-model { font-size: 0.72rem; color: var(--muted); margin-top: 8px; letter-spacing: 1px; }
+
+    .result-kept      { color: var(--accent); }
+    .result-returned  { color: var(--danger); }
+    .result-exchanged { color: var(--accent2); }
+
+    #error-box {
+      display: none;
+      background: rgba(240,74,106,0.08);
+      border: 1px solid var(--danger);
+      border-radius: 8px;
+      padding: 16px 20px;
+      color: var(--danger);
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(10,10,15,0.3);
+      border-top-color: #0a0a0f;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-block">
+      <h1>Model <span>Arena</span></h1>
+      <p>Run a prediction</p>
+    </div>
+    <a href="/" class="btn btn-outline">← Dashboard</a>
+  </header>
+
+  <!-- Model Selector -->
+  <div class="model-selector">
+    <div class="section-label">Select Model</div>
+    <select id="model-select">
+      {% for name in model_names %}
+      <option value="{{ name }}">{{ name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Input Form -->
+  <div class="form-card">
+    <div class="section-label">Input Features</div>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Year</label>
+        <input type="number" id="year" placeholder="e.g. 2024" value="2024"/>
+      </div>
+
+      <div class="form-group">
+        <label>Quarter</label>
+        <select id="quarter">
+          <option value="Q1">Q1</option>
+          <option value="Q2">Q2</option>
+          <option value="Q3">Q3</option>
+          <option value="Q4">Q4</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Month</label>
+        <select id="month">
+          <option>January</option><option>February</option><option>March</option>
+          <option>April</option><option>May</option><option>June</option>
+          <option>July</option><option>August</option><option>September</option>
+          <option>October</option><option>November</option><option>December</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Day</label>
+        <input type="number" id="day" placeholder="1–31" min="1" max="31" value="15"/>
+      </div>
+
+      <div class="form-group">
+        <label>Day of Week</label>
+        <select id="day_of_week">
+          <option value="0">Monday (0)</option>
+          <option value="1">Tuesday (1)</option>
+          <option value="2">Wednesday (2)</option>
+          <option value="3">Thursday (3)</option>
+          <option value="4">Friday (4)</option>
+          <option value="5">Saturday (5)</option>
+          <option value="6">Sunday (6)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Country</label>
+        <input type="text" id="country" placeholder="e.g. United States"/>
+      </div>
+
+      <div class="form-group">
+        <label>Region</label>
+        <select id="region">
+          <option>Africa</option>
+          <option>Asia</option>
+          <option>Europe</option>
+          <option>Europe/Asia</option>
+          <option>Middle East</option>
+          <option>North America</option>
+          <option>Oceania</option>
+          <option>South America</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Category</label>
+        <select id="category">
+          <option>Accessories</option>
+          <option>AirPods</option>
+          <option>Apple Watch</option>
+          <option>Mac</option>
+          <option>iPad</option>
+          <option>iPhone</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Storage</label>
+        <select id="storage">
+          <option>1 TB</option>
+          <option>1 TB SSD</option>
+          <option>128 GB</option>
+          <option>2 TB</option>
+          <option>2 TB SSD</option>
+          <option>256 GB</option>
+          <option>256 GB SSD</option>
+          <option>512 GB</option>
+          <option>512 GB SSD</option>
+          <option>64 GB</option>
+          <option>Not Applicable</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Unit Price (USD)</label>
+        <input type="number" id="unit_price_usd" placeholder="e.g. 799.99" step="0.01" value="799.99"/>
+      </div>
+
+      <div class="form-group">
+        <label>Discount %</label>
+        <input type="number" id="discount_pct" placeholder="e.g. 10" step="0.1" value="10"/>
+      </div>
+
+      <div class="form-group">
+        <label>Units Sold</label>
+        <input type="number" id="units_sold" placeholder="e.g. 1" value="1"/>
+      </div>
+
+      <div class="form-group">
+        <label>Revenue (USD)</label>
+        <input type="number" id="revenue_usd" placeholder="e.g. 719.99" step="0.01" value="719.99"/>
+      </div>
+
+      <div class="form-group">
+        <label>Sales Channel</label>
+        <select id="sales_channel">
+          <option>Apple Store</option>
+          <option>Authorized Reseller</option>
+          <option>Carrier Store</option>
+          <option>Corporate / B2B</option>
+          <option>Online (Apple.com)</option>
+          <option>Third-Party Retailer</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Payment Method</label>
+        <select id="payment_method">
+          <option>Apple Pay</option>
+          <option>Cash</option>
+          <option>Credit Card</option>
+          <option>Debit Card</option>
+          <option>EMI / Installment</option>
+          <option>Gift Card</option>
+          <option>Net Banking</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Customer Segment</label>
+        <select id="customer_segment">
+          <option>Business</option>
+          <option>Education</option>
+          <option>Government</option>
+          <option>Individual</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Customer Age Group</label>
+        <select id="customer_age_group">
+          <option>18–24</option>
+          <option>25–34</option>
+          <option>35–44</option>
+          <option>45–54</option>
+          <option>55+</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Previous Device OS</label>
+        <select id="previous_device_os">
+          <option>Android</option>
+          <option>New User</option>
+          <option>Other</option>
+          <option>Unknown</option>
+          <option>iOS 15</option>
+          <option>iOS 16</option>
+          <option>iOS 17</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div id="error-box"></div>
+    <button class="btn btn-primary" id="predict-btn" onclick="runPrediction()">
+      ⚡ Run Prediction
+    </button>
+  </div>
+
+  <!-- Result -->
+  <div id="result-box">
+    <div class="result-label">Prediction Result</div>
+    <div class="result-value" id="result-value">—</div>
+    <div class="result-model" id="result-model"></div>
+  </div>
+
+</div>
+
+<script>
+  async function runPrediction() {
+    const btn = document.getElementById('predict-btn');
+    const errorBox = document.getElementById('error-box');
+    const resultBox = document.getElementById('result-box');
+
+    errorBox.style.display = 'none';
+    resultBox.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Predicting...';
+
+    const payload = {
+      model_name:         document.getElementById('model-select').value,
+      year:               parseInt(document.getElementById('year').value),
+      quarter:            document.getElementById('quarter').value,
+      month:              document.getElementById('month').value,
+      day:                parseInt(document.getElementById('day').value),
+      day_of_week:        parseInt(document.getElementById('day_of_week').value),
+      country:            document.getElementById('country').value,
+      region:             document.getElementById('region').value,
+      category:           document.getElementById('category').value,
+      storage:            document.getElementById('storage').value,
+      unit_price_usd:     parseFloat(document.getElementById('unit_price_usd').value),
+      discount_pct:       parseFloat(document.getElementById('discount_pct').value),
+      units_sold:         parseInt(document.getElementById('units_sold').value),
+      revenue_usd:        parseFloat(document.getElementById('revenue_usd').value),
+      sales_channel:      document.getElementById('sales_channel').value,
+      payment_method:     document.getElementById('payment_method').value,
+      customer_segment:   document.getElementById('customer_segment').value,
+      customer_age_group: document.getElementById('customer_age_group').value,
+      previous_device_os: document.getElementById('previous_device_os').value,
+    };
+
+    try {
+      const res  = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (data.status === 'success') {
+        const val = document.getElementById('result-value');
+        val.textContent = data.prediction;
+        val.className   = 'result-value result-' + data.prediction.toLowerCase();
+        document.getElementById('result-model').textContent = `via ${data.model_used}`;
+        resultBox.style.display = 'block';
+        resultBox.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        errorBox.textContent = data.message || 'Prediction failed.';
+        errorBox.style.display = 'block';
+      }
+    } catch (err) {
+      errorBox.textContent = 'Network error: ' + err.message;
+      errorBox.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Run Prediction';
+  }
+</script>
+</body>
+</html>

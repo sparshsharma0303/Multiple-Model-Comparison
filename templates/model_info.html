@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Info — Model Arena</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:#0a0a0f; --border:#1e1e2e; --accent:#c8f04a; --accent2:#4af0c8;
+      --danger:#f04a6a; --text:#e8e8f0; --muted:#5a5a7a; --card-bg:#13131c;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:0.4;pointer-events:none;z-index:0;}
+    .container{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:48px 24px;}
+    .back-btn{display:inline-flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-decoration:none;margin-bottom:40px;transition:color 0.2s;}
+    .back-btn:hover{color:var(--text);}
+    .info-tag{display:inline-block;font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:2px;margin-bottom:16px;}
+    .tag-model{background:rgba(200,240,74,0.1);color:var(--accent);}
+    .tag-metric{background:rgba(74,240,200,0.1);color:var(--accent2);}
+    .info-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-2px;line-height:1.1;margin-bottom:12px;}
+    .info-title span{color:var(--accent);}
+    .info-subtitle{color:var(--muted);font-size:0.8rem;line-height:1.7;max-width:600px;margin-bottom:40px;}
+    .card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-bottom:20px;animation:fadeUp 0.4s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .card:nth-child(1){animation-delay:0.05s} .card:nth-child(2){animation-delay:0.1s} .card:nth-child(3){animation-delay:0.15s} .card:nth-child(4){animation-delay:0.2s} .card:nth-child(5){animation-delay:0.25s}
+    .card-title{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    .card p{font-size:0.82rem;line-height:1.8;color:#c8c8d8;}
+    .card p+p{margin-top:10px;}
+
+    /* Formula box */
+    .formula-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:20px 24px;font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--accent);text-align:center;margin:16px 0;letter-spacing:1px;}
+
+    /* How it works steps */
+    .steps{display:flex;flex-direction:column;gap:14px;margin-top:8px;}
+    .step{display:flex;gap:16px;align-items:flex-start;}
+    .step-num{width:28px;height:28px;border-radius:50%;background:rgba(200,240,74,0.1);border:1px solid var(--accent);color:var(--accent);font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+    .step-text{font-size:0.8rem;line-height:1.7;color:#c8c8d8;}
+
+    /* Pros/cons */
+    .pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;}
+    .pros,.cons{background:var(--bg);border-radius:8px;padding:16px 20px;}
+    .pros{border:1px solid rgba(200,240,74,0.2);}
+    .cons{border:1px solid rgba(240,74,106,0.2);}
+    .pros-title{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+    .cons-title{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--danger);margin-bottom:10px;}
+    .pros ul,.cons ul{list-style:none;display:flex;flex-direction:column;gap:6px;}
+    .pros li::before{content:'+ ';color:var(--accent);}
+    .cons li::before{content:'− ';color:var(--danger);}
+    .pros li,.cons li{font-size:0.78rem;line-height:1.5;color:#c8c8d8;}
+
+    /* Visual diagram (CSS-only) */
+    .diagram{margin-top:12px;}
+
+    /* When to use */
+    .use-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+    .use-chip{font-size:0.72rem;padding:6px 14px;border-radius:4px;background:rgba(74,240,200,0.08);border:1px solid rgba(74,240,200,0.2);color:var(--accent2);}
+
+    /* Hyperparams table */
+    .param-table{width:100%;border-collapse:collapse;margin-top:8px;}
+    .param-table th{font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+    .param-table td{font-size:0.78rem;padding:10px 12px;border-bottom:1px solid rgba(30,30,46,0.5);line-height:1.5;}
+    .param-table tr:last-child td{border-bottom:none;}
+    .param-name{color:var(--accent);font-weight:600;}
+
+    /* Related models nav */
+    .related-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+    .related-chip{font-size:0.75rem;padding:8px 16px;border-radius:4px;background:var(--bg);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all 0.2s;text-decoration:none;}
+    .related-chip:hover{border-color:var(--accent);color:var(--accent);}
+  </style>
+</head>
+<body>
+<div class="container">
+  <a href="/" class="back-btn">← Back to Dashboard</a>
+  <div id="content"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const type = params.get('type');
+const key  = params.get('key');
+
+/* ══════════════════════════════════════════
+   MODEL DEFINITIONS
+══════════════════════════════════════════ */
+const MODELS = {
+  "Logistic Regression": {
+    tag: "Linear Model",
+    subtitle: "A linear model that estimates the probability of a class using the sigmoid (binary) or softmax (multi-class) function.",
+    definition: "Logistic Regression models the relationship between features and a categorical outcome by fitting a linear decision boundary. Despite its name, it is a classification algorithm. It outputs probabilities for each class using the softmax function for multi-class problems.",
+    formula: "P(y=k | X) = softmax(Xw + b)",
+    steps: [
+      "Compute a weighted sum of input features: z = w₁x₁ + w₂x₂ + ... + wₙxₙ + b",
+      "Apply softmax to convert z into class probabilities",
+      "Assign the class with the highest probability as the prediction",
+      "During training, minimize Cross-Entropy Loss using gradient descent"
+    ],
+    pros: ["Fast to train and predict", "Highly interpretable (feature weights)", "Works well when classes are linearly separable", "Probability outputs are calibrated"],
+    cons: ["Assumes linear decision boundary", "Struggles with complex non-linear patterns", "Sensitive to outliers", "Requires feature scaling"],
+    when: ["Baseline model", "Interpretability needed", "Linearly separable data", "Probability estimates required"],
+    params: [
+      {name:"C", desc:"Inverse of regularization strength. Smaller = stronger regularization."},
+      {name:"max_iter", desc:"Maximum iterations for solver convergence."},
+      {name:"class_weight", desc:"'balanced' adjusts weights inversely proportional to class frequency."},
+      {name:"solver", desc:"Algorithm for optimization (lbfgs, saga, etc.)"}
+    ],
+    related: ["Ridge Classifier", "SVC", "LinearSVC"]
+  },
+  "Ridge Classifier": {
+    tag: "Linear Model",
+    subtitle: "A linear classifier using L2 regularization, converting regression output to class predictions.",
+    definition: "Ridge Classifier adapts Ridge Regression for classification by treating class labels as continuous targets and applying L2 regularization. It finds the class whose mean is closest to the predicted value. It's fast and effective for high-dimensional data.",
+    formula: "min ||Xw - y||² + α||w||²",
+    steps: [
+      "Encode class labels as continuous target values",
+      "Fit a Ridge Regression model (minimizes squared error + L2 penalty)",
+      "For prediction, assign the class whose centroid is nearest to the regression output",
+      "Alpha controls the regularization — higher alpha = smoother decision boundary"
+    ],
+    pros: ["Very fast training", "Handles multicollinearity well", "Less prone to overfitting than plain linear models", "Works well with many features"],
+    cons: ["No probability output", "Assumes classes are well-separated", "Less flexible than Logistic Regression", "Limited to linear boundaries"],
+    when: ["High-dimensional text/features", "Speed is priority", "Multi-class problems", "Many correlated features"],
+    params: [
+      {name:"alpha", desc:"Regularization strength. Higher = more regularization."},
+      {name:"class_weight", desc:"'balanced' handles imbalanced classes."},
+      {name:"solver", desc:"Algorithm for the linear system (auto, svd, cholesky, etc.)"}
+    ],
+    related: ["Logistic Regression", "LinearSVC"]
+  },
+  "Decision Tree": {
+    tag: "Tree-Based Model",
+    subtitle: "A tree that recursively splits data based on feature thresholds to create pure leaf nodes.",
+    definition: "Decision Trees partition the feature space into rectangular regions by asking a series of yes/no questions about feature values. Each internal node tests a feature, each branch represents an outcome, and each leaf node holds a class prediction. They are highly interpretable but prone to overfitting.",
+    formula: "Split criterion: Gini = 1 - Σ pᵢ²  |  Entropy = -Σ pᵢ log₂(pᵢ)",
+    steps: [
+      "Start at root with all training samples",
+      "Find the feature and threshold that best separates classes (min Gini / max Info Gain)",
+      "Split data into two branches and recurse on each subset",
+      "Stop when max_depth is reached, node is pure, or min_samples_split is hit",
+      "Assign majority class of leaf node as prediction"
+    ],
+    pros: ["Highly interpretable and visualizable", "No feature scaling needed", "Handles both numerical and categorical features", "Fast prediction"],
+    cons: ["Highly prone to overfitting", "Unstable — small data changes cause large tree changes", "Biased towards features with many levels", "Poor extrapolation"],
+    when: ["Interpretability is key", "Mixed feature types", "Non-linear boundaries needed", "Feature importance analysis"],
+    params: [
+      {name:"max_depth", desc:"Maximum depth of the tree. Lower = less overfitting."},
+      {name:"min_samples_split", desc:"Minimum samples required to split an internal node."},
+      {name:"min_samples_leaf", desc:"Minimum samples required at a leaf node."},
+      {name:"criterion", desc:"'gini' or 'entropy' — splitting quality measure."}
+    ],
+    related: ["Random Forest", "Gradient Boosting", "XGBoost"]
+  },
+  "Random Forest": {
+    tag: "Ensemble Model",
+    subtitle: "An ensemble of decision trees trained on random subsets of data and features, aggregated by voting.",
+    definition: "Random Forest builds multiple decision trees, each on a random bootstrap sample of the training data and a random subset of features. The final prediction is the majority vote across all trees. This reduces variance and overfitting compared to a single decision tree.",
+    formula: "ŷ = majority_vote(tree₁(x), tree₂(x), ..., treeₙ(x))",
+    steps: [
+      "Bootstrap: sample N training examples with replacement",
+      "At each node, randomly select √p features (p = total features)",
+      "Build a full decision tree on this bootstrap sample using only these features",
+      "Repeat for n_estimators trees",
+      "Predict: take majority vote across all trees"
+    ],
+    pros: ["Reduces overfitting vs single tree", "Robust to outliers and noise", "Built-in feature importance", "Handles missing values well"],
+    cons: ["Slow for large datasets", "Less interpretable than single tree", "Memory intensive", "Can still overfit on noisy data"],
+    when: ["Tabular data", "Feature importance needed", "Good baseline ensemble", "Robust predictions required"],
+    params: [
+      {name:"n_estimators", desc:"Number of trees. More = better but slower."},
+      {name:"max_depth", desc:"Max depth per tree."},
+      {name:"max_features", desc:"Features per split: 'sqrt', 'log2', or float."},
+      {name:"class_weight", desc:"Handles class imbalance."}
+    ],
+    related: ["Decision Tree", "Gradient Boosting", "XGBoost", "CatBoost"]
+  },
+  "Gradient Boosting": {
+    tag: "Boosting Ensemble",
+    subtitle: "Sequentially builds trees where each tree corrects the errors of the previous one.",
+    definition: "Gradient Boosting builds trees one at a time, where each new tree is fit on the residual errors of the previous ensemble. It minimizes a loss function using gradient descent in function space. Slow but highly accurate — one of the most powerful ML algorithms for tabular data.",
+    formula: "F_m(x) = F_{m-1}(x) + η · hₘ(x)   where hₘ fits residuals",
+    steps: [
+      "Initialize prediction as the mean of target values",
+      "Compute pseudo-residuals (negative gradient of loss function)",
+      "Fit a shallow decision tree to these residuals",
+      "Update predictions: F_m = F_{m-1} + learning_rate × tree_prediction",
+      "Repeat for n_estimators iterations"
+    ],
+    pros: ["High predictive accuracy", "Handles mixed feature types", "Built-in feature importance", "Flexible loss functions"],
+    cons: ["Prone to overfitting without tuning", "Slow to train (sequential)", "Many hyperparameters to tune", "Sensitive to outliers"],
+    when: ["Maximum accuracy needed", "Tabular data competitions", "When tree ensembles are appropriate", "Non-linear complex patterns"],
+    params: [
+      {name:"n_estimators", desc:"Number of boosting stages (trees)."},
+      {name:"learning_rate", desc:"Shrinks each tree's contribution. Lower = more trees needed."},
+      {name:"max_depth", desc:"Depth of each tree. Shallower trees reduce overfitting."},
+      {name:"subsample", desc:"Fraction of samples per tree. <1 adds stochasticity."}
+    ],
+    related: ["XGBoost", "CatBoost", "Random Forest"]
+  },
+  "XGBoost": {
+    tag: "Boosting Ensemble",
+    subtitle: "An optimized, regularized gradient boosting implementation known for speed and performance.",
+    definition: "XGBoost (eXtreme Gradient Boosting) is an optimized implementation of gradient boosting with built-in L1/L2 regularization, tree pruning, parallel processing, and handling of missing values. It dominated Kaggle competitions for years and remains a top choice for tabular data.",
+    formula: "Obj = Σ L(yᵢ, ŷᵢ) + Σ Ω(fₖ)   where Ω = γT + ½λ||w||²",
+    steps: [
+      "Same boosting framework as Gradient Boosting",
+      "Additionally applies L1 (alpha) and L2 (lambda) regularization on leaf weights",
+      "Uses second-order Taylor expansion for faster, more accurate gradient estimates",
+      "Prunes trees using gamma parameter (minimum gain to make a split)",
+      "Handles missing values natively by learning default directions"
+    ],
+    pros: ["Extremely fast (parallelized)", "Regularization prevents overfitting", "Handles missing values natively", "Very high accuracy on tabular data"],
+    cons: ["Many hyperparameters", "Can overfit on small datasets", "Less interpretable", "Requires label-encoded targets"],
+    when: ["High accuracy tabular tasks", "Structured/tabular data", "Competitions", "When speed + accuracy both matter"],
+    params: [
+      {name:"n_estimators", desc:"Number of boosting rounds."},
+      {name:"max_depth", desc:"Tree depth. Typical range: 3–10."},
+      {name:"learning_rate", desc:"Step size shrinkage. Typical: 0.01–0.3."},
+      {name:"reg_alpha / reg_lambda", desc:"L1 / L2 regularization on weights."}
+    ],
+    related: ["Gradient Boosting", "CatBoost", "Random Forest"]
+  },
+  "CatBoost": {
+    tag: "Boosting Ensemble",
+    subtitle: "A gradient boosting library that natively handles categorical features without preprocessing.",
+    definition: "CatBoost (Categorical Boosting) by Yandex is a gradient boosting algorithm that handles categorical features natively using an ordered target encoding scheme. It uses symmetric (oblivious) trees and achieves strong performance with minimal preprocessing.",
+    formula: "Same boosting objective as XGBoost with ordered categorical encoding",
+    steps: [
+      "Automatically encodes categorical features using ordered target statistics",
+      "Builds symmetric (oblivious) decision trees — same split at each level",
+      "Uses ordered boosting to avoid prediction shift (target leakage)",
+      "Applies built-in L2 regularization",
+      "Aggregates predictions across all trees"
+    ],
+    pros: ["Best-in-class categorical handling", "Less prone to overfitting than XGBoost/GBM", "Fast GPU training", "Minimal preprocessing required"],
+    cons: ["Slower than XGBoost on CPU for large data", "Less community resources", "Black box", "Verbose output without verbose=0"],
+    when: ["Datasets with many categorical features", "Minimal preprocessing pipelines", "When overfitting is a concern", "Production ML systems"],
+    params: [
+      {name:"iterations", desc:"Number of boosting trees."},
+      {name:"learning_rate", desc:"Step size."},
+      {name:"depth", desc:"Tree depth. Default 6."},
+      {name:"auto_class_weights", desc:"'Balanced' handles imbalanced classes."}
+    ],
+    related: ["XGBoost", "Gradient Boosting"]
+  },
+  "Gaussian NB": {
+    tag: "Probabilistic Model",
+    subtitle: "A probabilistic classifier assuming features follow a Gaussian (normal) distribution.",
+    definition: "Gaussian Naive Bayes applies Bayes' theorem with the 'naive' assumption that all features are conditionally independent given the class, and that each feature follows a Gaussian distribution. Despite the strong independence assumption, it works surprisingly well in practice.",
+    formula: "P(y|X) ∝ P(y) · Π P(xᵢ|y)   where P(xᵢ|y) ~ N(μ_y, σ²_y)",
+    steps: [
+      "Compute prior probability P(y) for each class from training data",
+      "For each feature, estimate mean (μ) and variance (σ²) per class",
+      "For a new sample, compute P(xᵢ|y) using Gaussian PDF for each feature",
+      "Multiply all likelihoods × prior (in log space to avoid underflow)",
+      "Predict class with highest posterior probability"
+    ],
+    pros: ["Extremely fast training and prediction", "Works well with small data", "Handles high-dimensional data", "Natural probabilistic outputs"],
+    cons: ["Strong independence assumption rarely holds", "Poor with correlated features", "Assumes Gaussian distribution", "Can be outperformed by other methods"],
+    when: ["Text classification (with Bernoulli NB)", "Quick baseline model", "Real-time prediction needed", "Small datasets"],
+    params: [
+      {name:"var_smoothing", desc:"Portion of largest variance added to all variances for stability."}
+    ],
+    related: ["Bernoulli NB", "Logistic Regression"]
+  },
+  "Bernoulli NB": {
+    tag: "Probabilistic Model",
+    subtitle: "Naive Bayes for binary/boolean features — ideal for text or one-hot encoded data.",
+    definition: "Bernoulli Naive Bayes assumes each feature is binary (0 or 1). It models the presence or absence of features rather than their magnitude. Commonly used in text classification where features represent word presence/absence in a document.",
+    formula: "P(xᵢ|y) = pᵢ^xᵢ · (1-pᵢ)^(1-xᵢ)   where pᵢ = P(xᵢ=1|y)",
+    steps: [
+      "Binarize features if not already binary (using threshold)",
+      "Estimate P(xᵢ=1|y) — probability of feature being present per class",
+      "For prediction: compute P(y|X) using Bernoulli likelihood for each feature",
+      "Apply Laplace smoothing to avoid zero probabilities",
+      "Predict the class with the highest posterior"
+    ],
+    pros: ["Very fast", "Works well with binary/sparse features", "Good for text data", "Penalizes absence of features"],
+    cons: ["Only handles binary features", "Strong independence assumption", "Loses magnitude information", "Less accurate than GaussianNB for continuous features"],
+    when: ["Binary features", "Sparse text/NLP data", "Document classification", "Fast prototyping"],
+    params: [
+      {name:"alpha", desc:"Laplace smoothing parameter. Default 1.0."},
+      {name:"binarize", desc:"Threshold for binarizing features. None = already binary."}
+    ],
+    related: ["Gaussian NB", "Logistic Regression"]
+  },
+  "KNN": {
+    tag: "Instance-Based Model",
+    subtitle: "Classifies based on the majority class among the k nearest training examples.",
+    definition: "K-Nearest Neighbors (KNN) is a non-parametric, lazy learning algorithm. It stores all training samples and at prediction time, finds the k most similar samples (by distance) and returns their majority class. No explicit training occurs — all computation is at inference time.",
+    formula: "ŷ = majority_class({y : x ∈ kNN(xₜₑₛₜ)})   distance: Euclidean, Manhattan, etc.",
+    steps: [
+      "Store all training data (no training phase)",
+      "For a new sample, compute distance to all training points",
+      "Find the k nearest neighbors",
+      "Take majority vote among the k neighbors' labels",
+      "Return the winning class"
+    ],
+    pros: ["No training time", "Naturally handles multi-class", "Non-parametric (no assumptions)", "Adapts to local patterns"],
+    cons: ["Very slow prediction on large datasets O(n)", "Sensitive to irrelevant features", "Requires feature scaling", "High memory usage"],
+    when: ["Small datasets", "Non-linear boundaries", "When training time matters more than prediction time", "Recommendation systems"],
+    params: [
+      {name:"n_neighbors", desc:"Number of nearest neighbors k. Typical: 3–15."},
+      {name:"metric", desc:"Distance metric: euclidean, manhattan, minkowski."},
+      {name:"weights", desc:"'uniform' or 'distance' — weight closer neighbors more."}
+    ],
+    related: ["SVC", "Decision Tree"]
+  },
+  "SVC": {
+    tag: "Kernel Model",
+    subtitle: "Finds the optimal hyperplane maximizing the margin between classes using kernel functions.",
+    definition: "Support Vector Classifier (SVC) finds the decision boundary (hyperplane) that maximizes the margin between classes. Using the kernel trick, it maps data into higher-dimensional spaces where linear separation is possible. Extremely powerful for complex boundaries but slow on large datasets.",
+    formula: "maximize: 2/||w||   subject to: yᵢ(w·xᵢ + b) ≥ 1 for all i",
+    steps: [
+      "Find support vectors — the training points closest to the decision boundary",
+      "Maximize the margin (distance) between classes at the support vectors",
+      "For non-linear data, apply kernel function (RBF, poly) to map to higher dimensions",
+      "C parameter controls trade-off between margin size and misclassification",
+      "Predict based on which side of the hyperplane a point falls on"
+    ],
+    pros: ["Effective in high-dimensional spaces", "Robust to outliers (only support vectors matter)", "Flexible via kernel choice", "Strong theoretical guarantees"],
+    cons: ["Very slow on large datasets O(n²-n³)", "Memory intensive", "Sensitive to feature scaling", "Hard to interpret"],
+    when: ["Small-medium datasets", "High-dimensional data (text, images)", "Clear margin of separation", "Non-linear boundaries with RBF kernel"],
+    params: [
+      {name:"C", desc:"Regularization. Higher = less regularization, tighter fit."},
+      {name:"kernel", desc:"'rbf', 'linear', 'poly', 'sigmoid'."},
+      {name:"gamma", desc:"Kernel coefficient for rbf/poly/sigmoid. 'scale' or 'auto'."},
+      {name:"class_weight", desc:"Handles imbalanced classes."}
+    ],
+    related: ["LinearSVC", "Logistic Regression", "KNN"]
+  },
+  "LinearSVC": {
+    tag: "Linear Kernel Model",
+    subtitle: "A fast linear SVM implementation optimized for large datasets.",
+    definition: "LinearSVC is a faster implementation of SVC with a linear kernel, optimized for large-scale datasets using liblinear. It doesn't support probability estimates and uses a different optimization strategy, making it significantly faster than SVC(kernel='linear').",
+    formula: "min ½||w||² + C Σ max(0, 1 - yᵢ(wᵀxᵢ + b))",
+    steps: [
+      "Optimize hinge loss with L2 regularization using coordinate descent",
+      "Find linear decision boundary maximizing class margin",
+      "Apply one-vs-rest scheme for multi-class classification",
+      "C controls the regularization trade-off",
+      "Predict based on the sign of the decision function"
+    ],
+    pros: ["Much faster than kernel SVC", "Scales to large datasets", "Good for high-dimensional sparse data", "L1/L2 regularization options"],
+    cons: ["Only linear boundaries", "No probability output", "Less powerful than kernel SVC", "Requires feature scaling"],
+    when: ["Large datasets where SVC is too slow", "Text classification", "Linear separability expected", "Speed is priority"],
+    params: [
+      {name:"C", desc:"Regularization parameter."},
+      {name:"max_iter", desc:"Maximum iterations. Increase if convergence warnings appear."},
+      {name:"class_weight", desc:"'balanced' for imbalanced classes."},
+      {name:"penalty", desc:"'l1' or 'l2' regularization."}
+    ],
+    related: ["SVC", "Logistic Regression", "Ridge Classifier"]
+  }
+};
+
+/* ══════════════════════════════════════════
+   METRIC DEFINITIONS
+══════════════════════════════════════════ */
+const METRICS = {
+  "weighted_f1": {
+    name: "Weighted F1 Score",
+    tag: "Classification Metric",
+    subtitle: "Harmonic mean of Precision and Recall, weighted by class support (sample count).",
+    definition: "The Weighted F1 Score calculates the F1 score for each class independently, then takes a weighted average where each class's contribution is proportional to its number of samples in the dataset. It accounts for class imbalance by giving more weight to larger classes.",
+    formula: "F1 = 2 · (Precision × Recall) / (Precision + Recall)   |   Weighted F1 = Σ (support_c / total) × F1_c",
+    what_it_means: [
+      "A score of 1.0 means perfect precision and recall on all classes",
+      "Heavily influenced by the majority class (Kept = 88%)",
+      "High weighted F1 does NOT mean the model is good at predicting minority classes",
+      "In your dataset: a model predicting 'Kept' for everything gets ~0.83 weighted F1 but fails on Returned/Exchanged"
+    ],
+    when: ["Overall model performance summary", "Imbalanced datasets where majority class matters most", "When you want one number to compare models"],
+    vs: "Use Macro F1 when all classes are equally important regardless of size."
+  },
+  "macro_f1": {
+    name: "Macro F1 Score",
+    tag: "Classification Metric",
+    subtitle: "Unweighted average of F1 scores across all classes — treats all classes equally.",
+    definition: "Macro F1 calculates the F1 score for each class independently and takes a simple (unweighted) average. Every class contributes equally regardless of how many samples it has. This makes it sensitive to performance on minority classes.",
+    formula: "Macro F1 = (F1_Kept + F1_Returned + F1_Exchanged) / 3",
+    what_it_means: [
+      "A model that ignores minority classes will have a LOW macro F1",
+      "Macro F1 of 0.31 in your results means the model struggles badly with Returned and Exchanged",
+      "Perfect macro F1 = 1.0 means excellent performance on ALL three classes",
+      "More informative than weighted F1 for imbalanced datasets like yours"
+    ],
+    when: ["Imbalanced classification problems", "When minority class performance matters", "Medical diagnosis, fraud detection", "Your Apple returns dataset"],
+    vs: "Use Weighted F1 when larger classes should have more influence on the overall score."
+  },
+  "overfit": {
+    name: "Overfitting",
+    tag: "Model Behavior",
+    subtitle: "When a model memorizes training data but fails to generalize to unseen data.",
+    definition: "Overfitting occurs when a model learns the training data too well — including its noise and outliers — and performs significantly worse on new, unseen data. The gap between train and test performance is the key indicator.",
+    formula: "Overfit Gap = Train Score − Test Score   |   Gap > 0.10 → likely overfitting",
+    what_it_means: [
+      "Train F1 = 1.0, Test F1 = 0.78 → severe overfitting (Decision Tree, Random Forest)",
+      "Train F1 ≈ Test F1 → stable, generalizing model",
+      "Test F1 > Train F1 → very rare, usually means training set is harder than test set",
+      "In your results: Decision Tree and Random Forest are heavily overfit"
+    ],
+    causes: [
+      "Model too complex (too many parameters)",
+      "Insufficient training data",
+      "Too many features relative to samples",
+      "Training for too many iterations"
+    ],
+    fixes: [
+      "Reduce model complexity (max_depth, min_samples_split)",
+      "Add regularization (L1, L2)",
+      "Get more training data",
+      "Use cross-validation",
+      "Apply early stopping (for boosting)"
+    ]
+  }
+};
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
+function renderModel(name) {
+  const m = MODELS[name];
+  if (!m) { document.getElementById('content').innerHTML = `<p style="color:var(--muted)">Model "${name}" not found.</p>`; return; }
+
+  const stepsHTML = m.steps.map((s,i) => `<div class="step"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('');
+  const prosHTML  = m.pros.map(p => `<li>${p}</li>`).join('');
+  const consHTML  = m.cons.map(c => `<li>${c}</li>`).join('');
+  const whenHTML  = m.when.map(w => `<div class="use-chip">${w}</div>`).join('');
+  const paramsHTML = m.params.map(p => `<tr><td class="param-name">${p.name}</td><td>${p.desc}</td></tr>`).join('');
+  const relatedHTML = m.related.map(r => `<a class="related-chip" href="/info?type=model&key=${encodeURIComponent(r)}">${r}</a>`).join('');
+
+  document.getElementById('content').innerHTML = `
+    <div class="info-tag tag-model">${m.tag}</div>
+    <div class="info-title">${name.replace(' ','<br><span>')}${name.includes(' ') ? '</span>' : ''}</div>
+    <div class="info-subtitle">${m.subtitle}</div>
+
+    <div class="card">
+      <div class="card-title">What is it?</div>
+      <p>${m.definition}</p>
+      <div class="formula-box">${m.formula}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">How it works</div>
+      <div class="steps">${stepsHTML}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Pros & Cons</div>
+      <div class="pros-cons">
+        <div class="pros"><div class="pros-title">Strengths</div><ul>${prosHTML}</ul></div>
+        <div class="cons"><div class="cons-title">Weaknesses</div><ul>${consHTML}</ul></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Key Hyperparameters</div>
+      <table class="param-table">
+        <thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+        <tbody>${paramsHTML}</tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Best used when</div>
+      <div class="use-chips">${whenHTML}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Related Models</div>
+      <div class="related-grid">${relatedHTML}</div>
+    </div>
+  `;
+}
+
+function renderMetric(key) {
+  const m = METRICS[key];
+  if (!m) { document.getElementById('content').innerHTML = `<p style="color:var(--muted)">Metric not found.</p>`; return; }
+
+  const whenHTML = m.when.map(w => `<div class="use-chip">${w}</div>`).join('');
+
+  let extraHTML = '';
+  if (m.what_it_means) {
+    extraHTML += `<div class="card" style="animation-delay:0.2s">
+      <div class="card-title">What does it mean in your results?</div>
+      ${m.what_it_means.map(pt => `<p>→ ${pt}</p>`).join('')}
+    </div>`;
+  }
+  if (m.causes) {
+    const causesHTML = m.causes.map(c => `<li>${c}</li>`).join('');
+    const fixesHTML  = m.fixes.map(f => `<li>${f}</li>`).join('');
+    extraHTML += `<div class="card" style="animation-delay:0.25s">
+      <div class="card-title">Causes & Fixes</div>
+      <div class="pros-cons">
+        <div class="cons"><div class="cons-title">Causes</div><ul>${causesHTML}</ul></div>
+        <div class="pros"><div class="pros-title">Fixes</div><ul>${fixesHTML}</ul></div>
+      </div>
+    </div>`;
+  }
+  if (m.vs) {
+    extraHTML += `<div class="card" style="animation-delay:0.3s">
+      <div class="card-title">vs Other Metrics</div>
+      <p>${m.vs}</p>
+    </div>`;
+  }
+
+  document.getElementById('content').innerHTML = `
+    <div class="info-tag tag-metric">${m.tag}</div>
+    <div class="info-title">${m.name}</div>
+    <div class="info-subtitle">${m.subtitle}</div>
+
+    <div class="card">
+      <div class="card-title">Definition</div>
+      <p>${m.definition}</p>
+      <div class="formula-box">${m.formula}</div>
+    </div>
+
+    ${extraHTML}
+
+    <div class="card">
+      <div class="card-title">Best used when</div>
+      <div class="use-chips">${whenHTML}</div>
+    </div>
+
+    <div class="card" style="animation-delay:0.35s">
+      <div class="card-title">Related Metrics</div>
+      <div class="related-grid">
+        <a class="related-chip" href="/info?type=metric&key=weighted_f1">Weighted F1</a>
+        <a class="related-chip" href="/info?type=metric&key=macro_f1">Macro F1</a>
+        <a class="related-chip" href="/info?type=metric&key=overfit">Overfitting</a>
+      </div>
+    </div>
+  `;
+}
+
+// Init
+if (type === 'model')  renderModel(key);
+if (type === 'metric') renderMetric(key);
+</script>
+</body>
+</html>

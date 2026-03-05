@@ -47,12 +47,15 @@ class DataTransformation():
 
             OHE_pipline = Pipeline( steps=[
                 ("imputer",SimpleImputer(strategy="most_frequent")),
-                ('one_hot_encoder', OneHotEncoder()),
+                ('one_hot_encoder', OneHotEncoder(handle_unknown='ignore')),
                 ("scaler",StandardScaler(with_mean=False))
                 ])
 
             target_encoder = TargetEncoder()
-            ordinal_encoder = OrdinalEncoder()
+            ordinal_encoder = OrdinalEncoder(
+                handle_unknown='use_encoded_value',  
+                unknown_value=-1  
+            )
 
             logging.info(f"Numerical columns: {numerical_cols}")
             logging.info(f"Target encoding featuers : {TE_featuers}")

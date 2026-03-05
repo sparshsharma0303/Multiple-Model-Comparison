@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import save_object,evaluate_models
-from data_ingestion import DataIngestion
-from data_transformation import DataTransformation
+from src.components.data_ingestion import DataIngestion
+from src.components.data_transformation import DataTransformation
 from imblearn.combine import SMOTETomek
 from imblearn.over_sampling import SMOTE
 
@@ -46,12 +46,12 @@ class ModelTrainer:
                 test_arr[:,:-1],
                 test_arr[:,-1]
             )
-            smt = SMOTETomek(
-            smote=SMOTE(sampling_strategy=0.3, random_state=42),  # don't fully balance
-            random_state=42
-)
-            X_train, y_train = smt.fit_resample(X_train, y_train)
-            logging.info(f'After SMOTETomek - class distribution: {dict(zip(*np.unique(y_train, return_counts=True)))}')
+            # smt = SMOTETomek(
+            # smote=SMOTE(sampling_strategy=0.3, random_state=42),  # don't fully balance
+            # random_state=42)
+
+            # X_train, y_train = smt.fit_resample(X_train, y_train)
+            # logging.info(f'After SMOTETomek - class distribution: {dict(zip(*np.unique(y_train, return_counts=True)))}')
             models={
                         "Logistic Regression": LogisticRegression(class_weight='balanced', max_iter=1000),
                         "Ridge Classifier": RidgeClassifier(class_weight='balanced'),
@@ -82,7 +82,7 @@ class ModelTrainer:
                 }
             }
             model_performance = evaluate_models(X_train, y_train,X_test,y_test,models)
-            
+
 
 
             logging.info(f'model performaces : {model_performance}')

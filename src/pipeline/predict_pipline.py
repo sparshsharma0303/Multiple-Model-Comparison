@@ -8,7 +8,7 @@ class PredictPipeline:
     def __init__(self):
         pass
 
-    def predict(self, model_name ,featuers):
+    def predict(self, model_name, features):
         try:
             model_path = os.path.join('artifacts', f'model_{model_name.replace(' ','_')}.pkl')
             preprocesssor_path = os.path.join('artifacts',"preprocessor.pkl")
@@ -20,7 +20,7 @@ class PredictPipeline:
 
             
 
-            data_scaled = preprocessor.transform(featuers)
+            data_scaled = preprocessor.transform(features)
             preds = model.predict(data_scaled)
 
             return label_encoder.inverse_transform(preds.astype(int))
