@@ -3,14 +3,12 @@ import os
 import pandas as pd
 import numpy as np
 from src.utils import save_object
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, TargetEncoder, OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, TargetEncoder, OrdinalEncoder,LabelEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from src.exception import CustomException
 from sklearn.impute import SimpleImputer
 from src.logger import logging
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, TargetEncoder, OrdinalEncoder
-from sklearn.compose import ColumnTransformer
 from dataclasses import dataclass
 
 
@@ -81,9 +79,19 @@ class DataTransformation():
             logging.info("train and test data loaded ")
             logging.info('obtaining preprocessign object')
 
-            preprocessor_obj = self.get_datatranformation_obj()
+            preprocessor_obj  = self.get_datatranformation_obj()
+
 
             target_column_name = "return_status"
+
+            le = LabelEncoder()
+            train_df[target_column_name] = le.fit_transform(train_df[target_column_name])
+            test_df[target_column_name] = le.transform(test_df[target_column_name])
+
+            save_object(
+            file_path=os.path.join('artifacts', 'label_encoder.pkl'),
+            obj=le
+        )
 
             input_feature_train_df = train_df.drop(columns=[target_column_name],axis=1)
             target_feature_train_df = train_df[target_column_name]
@@ -92,12 +100,19 @@ class DataTransformation():
             target_feature_test_df = test_df[target_column_name]
 
             logging.info('applying preprocessing obj in training and test dataframe')
+            target_column_name = "return_status"
 
-            input_feature_train_arr = preprocessor_obj.fit_transform(input_feature_train_df)
-            input_feature_test_arr = preprocessor_obj.fit_transform(input_feature_test_df)
+            
 
-            train_arr = np.c_(input_feature_train_arr)
-            test_arr = np.c_(input_feature_test_arr)
+
+            input_feature_train_arr = preprocessor_obj.fit_transform(input_feature_train_df, target_feature_train_df)
+            input_feature_test_arr = preprocessor_obj.transform(input_feature_test_df)
+
+
+            train_arr = np.c_[input_feature_train_arr, np.array(target_feature_train_df)]
+            test_arr  = np.c_[input_feature_test_arr,  np.array(target_feature_test_df)]
+
+
 
             save_object(
                 file_path=self.datatransformation_config.preprocessor_obj_file_path,

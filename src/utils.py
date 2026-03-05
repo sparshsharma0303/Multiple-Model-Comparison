@@ -2,9 +2,11 @@ import pickle
 import sys
 
 import os, pandas as pd, numpy as np
+from src.logger import logging
 from sklearn.metrics import f1_score, confusion_matrix, classification_report
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 from src.exception import CustomException
+from sklearn.model_selection import RandomizedSearchCV
 
 
 def save_object(file_path,obj):
@@ -19,12 +21,28 @@ def save_object(file_path,obj):
         raise CustomException(e,sys)
     
 
-def evaluate_models(X_train, y_train,X_test,y_test,models):
+def evaluate_models(X_train, y_train,X_test,y_test,models,param_grids=None):
     try:
         model_performances = {}
 
         for model_name,model in models.items():
-            model.fit(X_train,y_train)
+
+            if param_grids and model_name in param_grids:
+                rs = RandomizedSearchCV(
+                    estimator=model,
+                    param_distributions=param_grids[model_name],
+                    n_iter=10,
+                    cv=2,
+                    scoring='f1_macro',   # optimize for macro F1
+                    random_state=42,
+                    n_jobs=-1,
+                    verbose=0
+                )
+                rs.fit(X_train, y_train)
+                model = rs.best_estimator_
+                logging.info(f'{model_name} best params: {rs.best_params_}')
+            else:
+                model.fit(X_train, y_train)
 
             y_train_pred = model.predict(X_train)
 
