@@ -1,10 +1,10 @@
-# 🏆 Model Arena — Multi-Classifier Comparison App
+# Model Arena — Multi-Classifier Comparison App
 
 A full end-to-end machine learning web application that trains **12 classification models** on Apple sales data, compares their performance, and allows users to run predictions using any model of their choice.
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 
 **Problem Statement:** Given an Apple product sales transaction, predict the `return_status` — whether the product was `Kept`, `Returned`, or `Exchanged`.
 
@@ -12,7 +12,7 @@ A full end-to-end machine learning web application that trains **12 classificati
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 Multiple Model Comparision/
@@ -49,7 +49,7 @@ Multiple Model Comparision/
 
 ---
 
-## 📊 Dataset
+## Dataset
 
 | Property | Value |
 |---|---|
@@ -83,7 +83,7 @@ Multiple Model Comparision/
 
 ---
 
-## 🤖 Models Trained
+## Models Trained
 
 | Model | Type |
 |---|---|
@@ -114,7 +114,7 @@ Target (return_status) → LabelEncoder → 0: Exchanged, 1: Kept, 2: Returned
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the repository
 
@@ -143,7 +143,7 @@ http://localhost:5000
 
 ---
 
-## 🖥️ App Features
+## App Features
 
 ### Dashboard (`/`)
 - **Train Models** — triggers the full pipeline with a live animated loader (orbital rings + timer + model checklist)
@@ -164,7 +164,7 @@ http://localhost:5000
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -213,7 +213,7 @@ http://localhost:5000
 
 ---
 
-## 📈 Results
+## Results
 
 | Model | Test Weighted F1 | Test Macro F1 | Status |
 |---|---|---|---|
@@ -230,7 +230,7 @@ http://localhost:5000
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -243,7 +243,7 @@ http://localhost:5000
 
 ---
 
-## 📦 Requirements
+## Requirements
 
 ```
 flask
@@ -259,13 +259,13 @@ seaborn
 
 ---
 
-## 👤 Author
+## Author
 
 **Sparsh Sharma**
 sparshsharma0303@gmail.com
 
 ---
 
-## 📄 License
+## License
 
 This project is for educational purposes.
