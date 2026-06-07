@@ -205,3 +205,11 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+__pycache__/
+*.pyc
+*.egg-info/
+logs/
+catboost_info/
+notebook/
+.env

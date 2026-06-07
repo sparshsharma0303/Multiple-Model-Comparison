@@ -1,12 +1,9 @@
-numpy
-pandas 
-seaborn 
-matplotlib
-scikit-learn
-catboost
-xgboost
-dill
 flask
-setuptools
-imblearn
-# -e .
+scikit-learn
+xgboost
+catboost
+imbalanced-learn
+pandas
+numpy
+matplotlib
+seaborn
