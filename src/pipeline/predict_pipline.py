@@ -10,7 +10,7 @@ class PredictPipeline:
 
     def predict(self, model_name, features):
         try:
-            model_path = os.path.join('artifacts', f'model_{model_name.replace(' ','_')}.pkl')
+            model_path = os.path.join('artifacts', f'model_{model_name.replace(" ","_")}.pkl')
             preprocesssor_path = os.path.join('artifacts',"preprocessor.pkl")
             label_encoder_path = os.path.join('artifacts', 'label_encoder.pkl')
 
